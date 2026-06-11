@@ -166,4 +166,48 @@ class FitStore: ObservableObject {
         goal = newGoal
         save()
     }
+
+    /// 设目标体重；起始体重为空时自动取最早一条体重
+    func setTargetWeight(_ target: String) {
+        goal.targetWeightKg = target.trimmingCharacters(in: .whitespaces)
+        if goal.startWeight.isEmpty, let earliest = weightRecords.min(by: { $0.date < $1.date }) {
+            goal.startWeight = earliest.weightKg
+        }
+        if goal.startDate.isEmpty {
+            goal.startDate = fitTodayString()
+        }
+        save()
+    }
+
+    // MARK: - 数据清除
+
+    func clearTrainingRecords() {
+        trainingRecords = []
+        exerciseSets = []
+        save()
+    }
+
+    func clearWeightRecords() {
+        weightRecords = []
+        save()
+    }
+
+    func clearMeasurements() {
+        measurements = []
+        save()
+    }
+
+    func resetGoal() {
+        goal = GoalRecord(targetWeightKg: "", startWeight: "", startDate: "")
+        save()
+    }
+
+    func clearAll() {
+        trainingRecords = []
+        exerciseSets = []
+        weightRecords = []
+        measurements = []
+        goal = GoalRecord(targetWeightKg: "", startWeight: "", startDate: "")
+        save()
+    }
 }

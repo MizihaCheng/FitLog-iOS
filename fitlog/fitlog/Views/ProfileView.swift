@@ -4,134 +4,163 @@ import UniformTypeIdentifiers
 struct ProfileView: View {
     @EnvironmentObject var store: FitStore
 
-    @State private var showingGoal = false
-    @State private var showingAddWeight = false
-    @State private var showingAddMeasurement = false
+    @State private var targetInput = ""
+    @State private var loadedTarget = false
 
-    @State private var showingExporter = false
+    @State private var showingJSONExporter = false
+    @State private var showingCSVExporter = false
     @State private var showingImporter = false
     @State private var showingImportAlert = false
     @State private var importMessage = ""
-
-    private var sortedWeights: [DailyWeightRecord] {
-        store.weightRecords.sorted { $0.date > $1.date }
-    }
-
-    private var sortedMeasurements: [BodyMeasurementRecord] {
-        store.measurements.sorted { $0.date > $1.date }
-    }
-
-    private var hasGoal: Bool {
-        !(store.goal.targetWeightKg.isEmpty && store.goal.startWeight.isEmpty && store.goal.startDate.isEmpty)
-    }
+    @State private var pendingClear: ClearAction?
 
     var body: some View {
-        NavigationStack {
-            List {
-                // 目标
-                Section("目标") {
-                    if hasGoal {
-                        if !store.goal.targetWeightKg.isEmpty {
-                            LabeledContent("目标体重", value: "\(store.goal.targetWeightKg) kg")
-                        }
-                        if !store.goal.startWeight.isEmpty {
-                            LabeledContent("起始体重", value: "\(store.goal.startWeight) kg")
-                        }
-                        if !store.goal.startDate.isEmpty {
-                            LabeledContent("起始日期", value: store.goal.startDate)
-                        }
-                    } else {
-                        Text("还没有设置目标")
-                            .foregroundStyle(.secondary)
-                    }
-                    Button("编辑目标") { showingGoal = true }
-                }
-                .fitCardRow()
-
-                // 体重记录
-                Section {
-                    if sortedWeights.isEmpty {
-                        Text("还没有体重记录")
-                            .foregroundStyle(.secondary)
-                    } else {
-                        ForEach(sortedWeights, id: \.date) { record in
-                            LabeledContent(record.date, value: "\(record.weightKg) kg")
-                        }
-                        .onDelete(perform: deleteWeight)
-                    }
-                } header: {
-                    SectionHeaderWithAdd(title: "体重记录") { showingAddWeight = true }
-                }
-                .fitCardRow()
-
-                // 围度记录
-                Section {
-                    if sortedMeasurements.isEmpty {
-                        Text("还没有围度记录")
-                            .foregroundStyle(.secondary)
-                    } else {
-                        ForEach(sortedMeasurements, id: \.date) { record in
-                            MeasurementRow(record: record)
-                        }
-                        .onDelete(perform: deleteMeasurement)
-                    }
-                } header: {
-                    SectionHeaderWithAdd(title: "围度记录") { showingAddMeasurement = true }
-                }
-                .fitCardRow()
-
-                // 数据备份
-                Section {
-                    Button {
-                        showingExporter = true
-                    } label: {
-                        Label("导出备份", systemImage: "square.and.arrow.up")
-                    }
-                    Button {
-                        showingImporter = true
-                    } label: {
-                        Label("导入备份", systemImage: "square.and.arrow.down")
-                    }
-                } header: {
-                    Text("数据备份")
-                } footer: {
-                    Text("导入会覆盖当前全部数据，建议先导出备份")
-                }
-                .fitCardRow()
+        ScrollView {
+            VStack(spacing: 14) {
+                weightOverviewCard
+                targetCard
+                dataManagementCard
             }
-            .fitListChrome()
-            .navigationTitle("我的")
-            .sheet(isPresented: $showingGoal) { EditGoalView() }
-            .sheet(isPresented: $showingAddWeight) { AddWeightView() }
-            .sheet(isPresented: $showingAddMeasurement) { AddMeasurementView() }
-            .fileExporter(
-                isPresented: $showingExporter,
-                document: JSONDocument(data: store.exportData() ?? Data()),
-                contentType: .json,
-                defaultFilename: exportFilename
-            ) { _ in }
-            .fileImporter(
-                isPresented: $showingImporter,
-                allowedContentTypes: [.json]
-            ) { result in
-                handleImport(result)
-            }
-            .alert("导入", isPresented: $showingImportAlert) {
-                Button("好", role: .cancel) {}
-            } message: {
-                Text(importMessage)
-            }
+            .padding(.horizontal, 20).padding(.vertical, 18)
+        }
+        .background(Color.fitBackground.ignoresSafeArea())
+        .onAppear {
+            guard !loadedTarget else { return }
+            loadedTarget = true
+            targetInput = store.goal.targetWeightKg
+        }
+        .fileExporter(
+            isPresented: $showingJSONExporter,
+            document: JSONDocument(data: store.exportData() ?? Data()),
+            contentType: .json,
+            defaultFilename: "FitLog_backup_\(fitTodayString())"
+        ) { _ in }
+        .fileExporter(
+            isPresented: $showingCSVExporter,
+            document: CSVDocument(text: fitDetailedCSV(store: store)),
+            contentType: .commaSeparatedText,
+            defaultFilename: "FitLog_records_\(fitTodayString())"
+        ) { _ in }
+        .fileImporter(isPresented: $showingImporter, allowedContentTypes: [.json]) { result in
+            handleImport(result)
+        }
+        .alert("导入", isPresented: $showingImportAlert) {
+            Button("好", role: .cancel) {}
+        } message: { Text(importMessage) }
+        .alert(item: $pendingClear) { action in
+            Alert(
+                title: Text(action.title),
+                message: Text(action.message),
+                primaryButton: .destructive(Text("确定")) { action.perform(store) },
+                secondaryButton: .cancel(Text("取消"))
+            )
         }
     }
 
-    private var exportDateString: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: Date())
+    // MARK: - 体重概览
+
+    private var latest: DailyWeightRecord? { store.weightRecords.max { $0.date < $1.date } }
+    private var earliest: DailyWeightRecord? { store.weightRecords.min { $0.date < $1.date } }
+    private var weightDays: Int {
+        Set(store.weightRecords.filter { !$0.weightKg.isEmpty }.map { $0.date }).count
     }
 
-    private var exportFilename: String {
-        "fitlog-backup-\(exportDateString)"
+    private var weightOverviewCard: some View {
+        let change: (text: String, color: Color)? = {
+            guard let s = earliest.flatMap({ Double($0.weightKg) }),
+                  let c = latest.flatMap({ Double($0.weightKg) }) else { return nil }
+            let d = c - s
+            if d < 0 { return ("-\(fitFormatWeight(abs(d))) kg", .fitPositiveGreen) }
+            if d > 0 { return ("+\(fitFormatWeight(d)) kg", .fitWarningRed) }
+            return ("0 kg", .fitPrimaryText)
+        }()
+
+        return VStack(alignment: .leading, spacing: 14) {
+            Text("体重概览").font(.headline).foregroundStyle(Color.fitPrimaryText)
+            HStack(spacing: 10) {
+                statCell(latest.flatMap { $0.weightKg.isEmpty ? nil : "\($0.weightKg) kg" } ?? "--", "当前体重")
+                statCell(earliest.flatMap { $0.weightKg.isEmpty ? nil : "\($0.weightKg) kg" } ?? "--", "起始体重")
+            }
+            HStack(spacing: 10) {
+                statCell(change?.text ?? "--", "累计变化", valueColor: change?.color ?? .fitPrimaryText)
+                statCell(weightDays > 0 ? "\(weightDays) 天" : "--", "记录天数")
+            }
+        }
+        .fitCard()
+    }
+
+    // MARK: - 目标体重
+
+    private var targetCard: some View {
+        let currentVal = latest.flatMap { Double($0.weightKg) }
+        let targetVal = Double(store.goal.targetWeightKg)
+        let distance: (text: String, color: Color) = {
+            guard let cur = currentVal, let tgt = targetVal else { return ("--", .fitPrimaryText) }
+            let diff = cur - tgt
+            if abs(diff) < 0.05 { return ("已达到", .fitPositiveGreen) }
+            return ("还差 \(fitFormatWeight(abs(diff))) kg", .fitPrimaryText)
+        }()
+
+        return VStack(alignment: .leading, spacing: 14) {
+            Text("目标体重").font(.headline).foregroundStyle(Color.fitPrimaryText)
+            HStack(spacing: 10) {
+                statCell(currentVal.map { "\(fitFormatWeight($0)) kg" } ?? "暂无", "当前体重")
+                statCell(store.goal.targetWeightKg.isEmpty ? "未设置" : "\(store.goal.targetWeightKg) kg", "目标体重")
+                statCell(distance.text, "距离目标", valueColor: distance.color)
+            }
+            FitLabeledField(label: "设置目标体重", text: $targetInput, placeholder: "目标体重", suffix: "kg")
+            FitPrimaryButton(title: "保存目标") { store.setTargetWeight(targetInput) }
+        }
+        .fitCard()
+    }
+
+    // MARK: - 数据管理
+
+    private var dataManagementCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("数据管理").font(.headline).foregroundStyle(Color.fitPrimaryText)
+
+            actionRow("导出备份（JSON）", icon: "square.and.arrow.up") { showingJSONExporter = true }
+            actionRow("导出明细（CSV）", icon: "tablecells") { showingCSVExporter = true }
+            actionRow("导入备份（JSON）", icon: "square.and.arrow.down") { showingImporter = true }
+
+            Divider().background(Color.fitDivider).padding(.vertical, 4)
+
+            actionRow("清除训练记录", icon: "trash", danger: true) { pendingClear = .training }
+            actionRow("清除体重记录", icon: "trash", danger: true) { pendingClear = .weight }
+            actionRow("清除围度记录", icon: "trash", danger: true) { pendingClear = .measurement }
+            actionRow("重置目标", icon: "arrow.counterclockwise", danger: true) { pendingClear = .goal }
+            actionRow("清空全部数据", icon: "exclamationmark.triangle", danger: true) { pendingClear = .all }
+        }
+        .fitCard()
+    }
+
+    private func actionRow(_ title: String, icon: String, danger: Bool = false, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .frame(width: 22)
+                    .foregroundStyle(danger ? Color.fitWarningRed : Color.fitAccent)
+                Text(title)
+                    .foregroundStyle(danger ? Color.fitWarningRed : Color.fitPrimaryText)
+                Spacer()
+            }
+            .padding(.vertical, 8)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - 通用
+
+    private func statCell(_ value: String, _ label: String, valueColor: Color = .fitPrimaryText) -> some View {
+        VStack(spacing: 4) {
+            Text(value).font(.headline).foregroundStyle(valueColor).multilineTextAlignment(.center)
+            Text(label).font(.caption2).foregroundStyle(Color.fitSecondaryText)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(14)
+        .background(Color.fitBackground, in: RoundedRectangle(cornerRadius: 14))
     }
 
     private func handleImport(_ result: Result<URL, Error>) {
@@ -150,63 +179,36 @@ struct ProfileView: View {
         }
         showingImportAlert = true
     }
-
-    private func deleteWeight(at offsets: IndexSet) {
-        for index in offsets {
-            store.deleteWeight(sortedWeights[index])
-        }
-    }
-
-    private func deleteMeasurement(at offsets: IndexSet) {
-        for index in offsets {
-            store.deleteMeasurement(sortedMeasurements[index])
-        }
-    }
 }
 
-/// 带「+」按钮的分组标题
-private struct SectionHeaderWithAdd: View {
-    let title: String
-    let onAdd: () -> Void
+/// 清除类操作（带确认）
+enum ClearAction: Identifiable {
+    case training, weight, measurement, goal, all
+    var id: String { String(describing: self) }
 
-    var body: some View {
-        HStack {
-            Text(title)
-            Spacer()
-            Button(action: onAdd) {
-                Image(systemName: "plus")
-            }
+    var title: String {
+        switch self {
+        case .training: return "清除训练记录"
+        case .weight: return "清除体重记录"
+        case .measurement: return "清除围度记录"
+        case .goal: return "重置目标"
+        case .all: return "清空全部数据"
         }
     }
-}
-
-/// 围度单行：日期 + 关键数值摘要
-private struct MeasurementRow: View {
-    let record: BodyMeasurementRecord
-
-    private var summary: String {
-        var parts: [String] = []
-        if !record.waistCm.isEmpty { parts.append("腰 \(record.waistCm)") }
-        if !record.hipCm.isEmpty { parts.append("臀 \(record.hipCm)") }
-        if !record.bodyFatPercent.isEmpty { parts.append("体脂 \(record.bodyFatPercent)%") }
-        return parts.joined(separator: "  ")
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(record.date)
-                .font(.headline)
-            if !summary.isEmpty {
-                Text(summary)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            if !record.note.isEmpty {
-                Text(record.note)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
+    var message: String {
+        switch self {
+        case .all: return "将删除全部训练、体重、围度和目标，且无法撤销。建议先导出备份。"
+        default: return "此操作无法撤销，确定继续？"
         }
-        .padding(.vertical, 2)
+    }
+    @MainActor
+    func perform(_ store: FitStore) {
+        switch self {
+        case .training: store.clearTrainingRecords()
+        case .weight: store.clearWeightRecords()
+        case .measurement: store.clearMeasurements()
+        case .goal: store.resetGoal()
+        case .all: store.clearAll()
+        }
     }
 }
