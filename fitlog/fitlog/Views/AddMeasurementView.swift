@@ -27,14 +27,14 @@ struct AddMeasurementView: View {
                     DatePicker("日期", selection: $date, displayedComponents: .date)
                 }
                 Section("围度（cm，可只填部分）") {
-                    measurementField("腰围", text: $waist)
-                    measurementField("臀围", text: $hip)
-                    measurementField("大腿", text: $thigh)
-                    measurementField("胸围", text: $chest)
-                    measurementField("手臂", text: $arm)
+                    measurementField("腰围", unit: "cm", text: $waist)
+                    measurementField("臀围", unit: "cm", text: $hip)
+                    measurementField("大腿", unit: "cm", text: $thigh)
+                    measurementField("胸围", unit: "cm", text: $chest)
+                    measurementField("手臂", unit: "cm", text: $arm)
                 }
                 Section("体脂") {
-                    measurementField("体脂率（%）", text: $bodyFat)
+                    measurementField("体脂率", unit: "%", text: $bodyFat)
                 }
                 Section("备注（可空）") {
                     TextField("备注", text: $note, axis: .vertical)
@@ -55,14 +55,13 @@ struct AddMeasurementView: View {
         }
     }
 
-    private func measurementField(_ label: String, text: Binding<String>) -> some View {
+    private func measurementField(_ label: String, unit: String, text: Binding<String>) -> some View {
         HStack {
             Text(label)
-            Spacer()
-            TextField("", text: text)
+                .frame(width: 80, alignment: .leading)
+            TextField(unit, text: text)
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.trailing)
-                .frame(maxWidth: 120)
         }
     }
 
