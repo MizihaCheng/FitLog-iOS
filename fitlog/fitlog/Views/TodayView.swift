@@ -49,7 +49,7 @@ struct TodayView: View {
         }
         .background(Color.fitBackground.ignoresSafeArea())
         .sheet(isPresented: $showingWeight) { AddWeightView() }
-        .sheet(isPresented: $showingTraining) { AddTrainingView() }
+        .sheet(isPresented: $showingTraining) { StructuredTrainingEntryView() }
         .sheet(isPresented: $showingMeasurement) { AddMeasurementView() }
     }
 

@@ -95,6 +95,13 @@ class FitStore: ObservableObject {
         save()
     }
 
+    /// 一次训练连同它的组一起保存
+    func addTraining(_ record: TrainingRecord, sets: [ExerciseSet]) {
+        trainingRecords.append(record)
+        exerciseSets.append(contentsOf: sets)
+        save()
+    }
+
     func deleteTrainingRecord(_ record: TrainingRecord) {
         trainingRecords.removeAll { $0.id == record.id }
         // 连带删除该训练下的所有组
