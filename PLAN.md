@@ -61,8 +61,8 @@ git pull
 - [x] **第 1 步** FitStore JSON 持久化 + 今日页训练记录（增 / 列表 / 滑动删除 / 空态）
 - [x] **第 2 步** 记录页：全部历史训练列表，按日期分组（倒序）、滑动删除、空态（编辑待后续）
 - [x] **第 3 步** 训练组（ExerciseSet）：训练详情页 WorkoutDetailView + 加组表单 AddSetView，今日/记录行可点进详情
-- [ ] **第 4 步** 体重 & 围度记录 + 目标（DailyWeightRecord / BodyMeasurementRecord / GoalRecord）
-- [ ] **第 5 步** 「我的 / Profile」页：目标设置、数据备份/导入
+- [x] **第 4 步** 「我的」Tab（ProfileView）：目标 + 体重记录 + 围度记录，含 EditGoalView / AddWeightView / AddMeasurementView
+- [ ] **第 5 步** 「我的」页增强：数据备份/导入、导出（在 ProfileView 上加）
 - [ ] **第 6 步** 趋势页：Swift Charts 画体重曲线、训练量等（用户标记为最麻烦，靠后做）
 - [ ] **第 7 步** 日历页：月历视图标注有训练的日期
 - [ ] **第 8 步** 肌肉激活图（MuscleMap）—— 移植难点，独立排期
@@ -75,6 +75,6 @@ git pull
 
 ## 进度备注
 
-- 最近完成：第 3 步 训练组（commit `a9d7ca8`）。
-- 下一步：第 4 步 体重 / 围度记录 + 目标。
+- 最近完成：第 4 步 我的页（commit `fde5d0e`）。现在共 5 个 Tab：今日/记录/趋势/日历/我的。
+- 下一步：第 6 步 趋势页 Swift Charts（第 5 步备份/导出可穿插）。
 - 同一份计划也记在 Claude 长期记忆 `fitlog-ios-port.md`，两边保持同步。
