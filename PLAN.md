@@ -63,7 +63,7 @@ git pull
 - [x] **第 3 步** 训练组（ExerciseSet）：训练详情页 WorkoutDetailView + 加组表单 AddSetView，今日/记录行可点进详情
 - [x] **第 4 步** 「我的」Tab（ProfileView）：目标 + 体重记录 + 围度记录，含 EditGoalView / AddWeightView / AddMeasurementView
 - [ ] **第 5 步** 「我的」页增强：数据备份/导入、导出（在 ProfileView 上加）
-- [ ] **第 6 步** 趋势页：Swift Charts 画体重曲线、训练量等（用户标记为最麻烦，靠后做）
+- [x] **第 6 步** 趋势页：Swift Charts 体重折线 + 目标虚线 + 统计（最新/变化/训练次数）。可后续加训练量图
 - [ ] **第 7 步** 日历页：月历视图标注有训练的日期
 - [ ] **第 8 步** 肌肉激活图（MuscleMap）—— 移植难点，独立排期
 - [ ] **第 9 步** PDF 导出 / 备份文件分享
@@ -75,6 +75,6 @@ git pull
 
 ## 进度备注
 
-- 最近完成：第 4 步 我的页（commit `fde5d0e`）。现在共 5 个 Tab：今日/记录/趋势/日历/我的。
-- 下一步：第 6 步 趋势页 Swift Charts（第 5 步备份/导出可穿插）。
+- 最近完成：第 6 步 趋势页 Swift Charts（commit `d76685e`）。
+- 下一步：第 7 步 日历页（月历标注有训练的日期）。第 5 步备份/导出仍待做。
 - 同一份计划也记在 Claude 长期记忆 `fitlog-ios-port.md`，两边保持同步。
