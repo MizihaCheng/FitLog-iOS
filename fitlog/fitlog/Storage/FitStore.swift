@@ -116,6 +116,14 @@ class FitStore: ObservableObject {
         exerciseSets.filter { $0.workoutId == workoutId }
     }
 
+    /// 历史出现过的动作名（去重、排序），用于录入时自动补全
+    var exerciseNameSuggestions: [String] {
+        let names = exerciseSets
+            .map { $0.exerciseName.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        return Array(Set(names)).sorted()
+    }
+
     func addExerciseSet(_ set: ExerciseSet) {
         exerciseSets.append(set)
         save()

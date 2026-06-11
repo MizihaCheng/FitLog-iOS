@@ -142,6 +142,7 @@ struct StructuredTrainingEntryView: View {
             ForEach($exercises) { $exercise in
                 ExerciseInputCard(
                     exercise: $exercise,
+                    suggestions: store.exerciseNameSuggestions,
                     canDelete: exercises.count > 1,
                     onDelete: { exercises.removeAll { $0.id == exercise.id }
                         if exercises.isEmpty { exercises = [ExerciseInput()] } }
@@ -265,20 +266,56 @@ struct SetInput: Identifiable {
 /// 单个动作卡片：动作名 + 多组
 private struct ExerciseInputCard: View {
     @Binding var exercise: ExerciseInput
+    let suggestions: [String]
     let canDelete: Bool
     let onDelete: () -> Void
+
+    @FocusState private var nameFocused: Bool
+
+    /// 聚焦时按 包含/开头 匹配历史动作（最多 6 条，排除完全相同）
+    private var filteredSuggestions: [String] {
+        guard nameFocused else { return [] }
+        let query = exercise.exerciseName.trimmingCharacters(in: .whitespaces)
+        let matches = suggestions.filter { item in
+            (query.isEmpty || item.localizedCaseInsensitiveContains(query)) && item != exercise.exerciseName
+        }
+        return Array(matches.prefix(6))
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 TextField("动作名称（如 卧推）", text: $exercise.exerciseName)
                     .font(.subheadline).fontWeight(.semibold)
+                    .focused($nameFocused)
                 if canDelete {
                     Button(role: .destructive, action: onDelete) {
                         Image(systemName: "trash").font(.caption).foregroundStyle(Color.fitWarningRed)
                     }
                     .buttonStyle(.plain)
                 }
+            }
+
+            if !filteredSuggestions.isEmpty {
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(filteredSuggestions, id: \.self) { suggestion in
+                        Button {
+                            exercise.exerciseName = suggestion
+                            nameFocused = false
+                        } label: {
+                            Text(suggestion)
+                                .font(.subheadline)
+                                .foregroundStyle(Color.fitPrimaryText)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.vertical, 8).padding(.horizontal, 10)
+                        }
+                        .buttonStyle(.plain)
+                        if suggestion != filteredSuggestions.last {
+                            Divider()
+                        }
+                    }
+                }
+                .background(Color.fitCardSurface, in: RoundedRectangle(cornerRadius: 8))
             }
 
             ForEach(Array(exercise.sets.enumerated()), id: \.element.id) { index, set in
