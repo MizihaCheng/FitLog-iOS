@@ -18,11 +18,54 @@ class FitStore: ObservableObject {
         load()
     }
 
+    /// 磁盘上 JSON 的完整结构
+    private struct Snapshot: Codable {
+        var trainingRecords: [TrainingRecord]
+        var exerciseSets: [ExerciseSet]
+        var weightRecords: [DailyWeightRecord]
+        var measurements: [BodyMeasurementRecord]
+        var goal: GoalRecord
+    }
+
     func save() {
-        // TODO: JSON 持久化（与 Android v5 格式兼容）
+        let snapshot = Snapshot(
+            trainingRecords: trainingRecords,
+            exerciseSets: exerciseSets,
+            weightRecords: weightRecords,
+            measurements: measurements,
+            goal: goal
+        )
+        do {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            let data = try encoder.encode(snapshot)
+            try data.write(to: storageURL, options: [.atomic])
+        } catch {
+            print("FitStore 保存失败: \(error)")
+        }
     }
 
     private func load() {
-        // TODO: 从 storageURL 读取 JSON，解析各字段
+        guard let data = try? Data(contentsOf: storageURL),
+              let snapshot = try? JSONDecoder().decode(Snapshot.self, from: data) else {
+            return
+        }
+        trainingRecords = snapshot.trainingRecords
+        exerciseSets = snapshot.exerciseSets
+        weightRecords = snapshot.weightRecords
+        measurements = snapshot.measurements
+        goal = snapshot.goal
+    }
+
+    // MARK: - 训练记录
+
+    func addTrainingRecord(_ record: TrainingRecord) {
+        trainingRecords.append(record)
+        save()
+    }
+
+    func deleteTrainingRecord(_ record: TrainingRecord) {
+        trainingRecords.removeAll { $0.id == record.id }
+        save()
     }
 }
