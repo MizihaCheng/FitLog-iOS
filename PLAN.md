@@ -62,7 +62,7 @@ git pull
 - [x] **第 2 步** 记录页：全部历史训练列表，按日期分组（倒序）、滑动删除、空态（编辑待后续）
 - [x] **第 3 步** 训练组（ExerciseSet）：训练详情页 WorkoutDetailView + 加组表单 AddSetView，今日/记录行可点进详情
 - [x] **第 4 步** 「我的」Tab（ProfileView）：目标 + 体重记录 + 围度记录，含 EditGoalView / AddWeightView / AddMeasurementView
-- [ ] **第 5 步** 「我的」页增强：数据备份/导入、导出（在 ProfileView 上加）
+- [x] **第 5 步** 数据备份：ProfileView 导出/导入 JSON（fileExporter/fileImporter + JSONDocument）
 - [x] **第 6 步** 趋势页：Swift Charts 体重折线 + 目标虚线 + 统计（最新/变化/训练次数）。可后续加训练量图
 - [x] **第 7 步** 日历页：自定义月历（周一起始、翻月），训练日标圆点，点日期看当天训练
 - [ ] **第 8 步** 肌肉激活图（MuscleMap）—— 移植难点，独立排期
@@ -78,6 +78,6 @@ git pull
 
 ## 进度备注
 
-- 最近完成：第 10 步 UI 还原（commit `437cb8e`），主界面+弹窗均套暖色主题。
-- 下一步：剩 第 5 步备份/导出、第 8 步肌肉图、第 9 步 PDF。建议做备份/导出（防丢数据）。
+- 最近完成：第 5 步 数据备份（commit `7b0f97d`）。
+- 下一步：剩 第 8 步肌肉图、第 9 步 PDF（均为可选增强）。核心+UI+备份已全部完成。
 - 同一份计划也记在 Claude 长期记忆 `fitlog-ios-port.md`，两边保持同步。
