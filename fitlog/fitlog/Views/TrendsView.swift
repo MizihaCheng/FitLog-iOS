@@ -45,6 +45,7 @@ struct TrendsView: View {
                             .padding(.vertical, 8)
                     }
                 }
+                .fitCardRow()
 
                 Section("统计") {
                     if let latest = weightPoints.last {
@@ -56,7 +57,9 @@ struct TrendsView: View {
                     LabeledContent("训练总次数", value: "\(store.trainingRecords.count) 次")
                     LabeledContent("本周训练", value: "\(thisWeekCount) 次")
                 }
+                .fitCardRow()
             }
+            .fitListChrome()
             .navigationTitle("趋势")
         }
     }

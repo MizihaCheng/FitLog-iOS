@@ -40,6 +40,7 @@ struct ProfileView: View {
                     }
                     Button("编辑目标") { showingGoal = true }
                 }
+                .fitCardRow()
 
                 // 体重记录
                 Section {
@@ -55,6 +56,7 @@ struct ProfileView: View {
                 } header: {
                     SectionHeaderWithAdd(title: "体重记录") { showingAddWeight = true }
                 }
+                .fitCardRow()
 
                 // 围度记录
                 Section {
@@ -70,7 +72,9 @@ struct ProfileView: View {
                 } header: {
                     SectionHeaderWithAdd(title: "围度记录") { showingAddMeasurement = true }
                 }
+                .fitCardRow()
             }
+            .fitListChrome()
             .navigationTitle("我的")
             .sheet(isPresented: $showingGoal) { EditGoalView() }
             .sheet(isPresented: $showingAddWeight) { AddWeightView() }

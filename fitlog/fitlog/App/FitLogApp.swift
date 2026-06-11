@@ -8,6 +8,7 @@ struct FitLogApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(store)
+                .tint(.fitAccent)
         }
     }
 }

@@ -34,6 +34,7 @@ struct CalendarView: View {
                 }
                 .padding()
             }
+            .background(Color.fitBackground.ignoresSafeArea())
             .navigationTitle("日历")
         }
     }
@@ -155,7 +156,7 @@ struct CalendarView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .background(Color.fitCardSurface, in: RoundedRectangle(cornerRadius: 18))
     }
 
     // MARK: - 计算

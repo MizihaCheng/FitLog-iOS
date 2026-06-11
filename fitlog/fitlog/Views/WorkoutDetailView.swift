@@ -24,6 +24,7 @@ struct WorkoutDetailView: View {
                     LabeledContent("备注", value: record.note)
                 }
             }
+            .fitCardRow()
 
             Section("训练组") {
                 if sets.isEmpty {
@@ -36,7 +37,9 @@ struct WorkoutDetailView: View {
                     .onDelete(perform: delete)
                 }
             }
+            .fitCardRow()
         }
+        .fitListChrome()
         .navigationTitle(record.trainingType)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

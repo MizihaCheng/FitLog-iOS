@@ -35,11 +35,14 @@ struct RecordsView: View {
                                 .onDelete { offsets in
                                     delete(offsets, in: group.records)
                                 }
+                                .fitCardRow()
                             }
                         }
                     }
+                    .fitListChrome()
                 }
             }
+            .background(Color.fitBackground.ignoresSafeArea())
             .navigationTitle("记录")
         }
     }

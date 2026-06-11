@@ -37,9 +37,12 @@ struct TodayView: View {
                             }
                         }
                         .onDelete(perform: delete)
+                        .fitCardRow()
                     }
+                    .fitListChrome()
                 }
             }
+            .background(Color.fitBackground.ignoresSafeArea())
             .navigationTitle("今日")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
