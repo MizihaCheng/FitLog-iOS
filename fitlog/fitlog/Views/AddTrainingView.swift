@@ -21,13 +21,16 @@ struct AddTrainingView: View {
                     DatePicker("日期", selection: $date, displayedComponents: .date)
                     TextField("训练类型（如 力量 / 跑步）", text: $trainingType)
                 }
+                .fitCardRow()
                 Section("详情（可空）") {
                     TextField("时长（分钟）", text: $durationText)
                         .keyboardType(.numberPad)
                     TextField("备注", text: $note, axis: .vertical)
                         .lineLimit(1...4)
                 }
+                .fitCardRow()
             }
+            .fitListChrome()
             .navigationTitle("添加训练")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

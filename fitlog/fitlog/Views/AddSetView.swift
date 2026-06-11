@@ -23,17 +23,21 @@ struct AddSetView: View {
                 Section("动作") {
                     TextField("动作名称（如 卧推 / 深蹲）", text: $exerciseName)
                 }
+                .fitCardRow()
                 Section("组数据") {
                     TextField("重量（kg，可空）", text: $weightText)
                         .keyboardType(.decimalPad)
                     TextField("次数", text: $repsText)
                         .keyboardType(.numberPad)
                 }
+                .fitCardRow()
                 Section("备注（可空）") {
                     TextField("备注", text: $note, axis: .vertical)
                         .lineLimit(1...4)
                 }
+                .fitCardRow()
             }
+            .fitListChrome()
             .navigationTitle("添加训练组")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

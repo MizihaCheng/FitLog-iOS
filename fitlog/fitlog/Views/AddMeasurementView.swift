@@ -26,6 +26,7 @@ struct AddMeasurementView: View {
                 Section {
                     DatePicker("日期", selection: $date, displayedComponents: .date)
                 }
+                .fitCardRow()
                 Section("围度（cm，可只填部分）") {
                     measurementField("腰围", unit: "cm", text: $waist)
                     measurementField("臀围", unit: "cm", text: $hip)
@@ -33,14 +34,18 @@ struct AddMeasurementView: View {
                     measurementField("胸围", unit: "cm", text: $chest)
                     measurementField("手臂", unit: "cm", text: $arm)
                 }
+                .fitCardRow()
                 Section("体脂") {
                     measurementField("体脂率", unit: "%", text: $bodyFat)
                 }
+                .fitCardRow()
                 Section("备注（可空）") {
                     TextField("备注", text: $note, axis: .vertical)
                         .lineLimit(1...4)
                 }
+                .fitCardRow()
             }
+            .fitListChrome()
             .navigationTitle("记录围度")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

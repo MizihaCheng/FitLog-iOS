@@ -19,10 +19,13 @@ struct EditGoalView: View {
                     TextField("起始体重（kg）", text: $startWeight)
                         .keyboardType(.decimalPad)
                 }
+                .fitCardRow()
                 Section("起始日期") {
                     DatePicker("日期", selection: $startDate, displayedComponents: .date)
                 }
+                .fitCardRow()
             }
+            .fitListChrome()
             .navigationTitle("编辑目标")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

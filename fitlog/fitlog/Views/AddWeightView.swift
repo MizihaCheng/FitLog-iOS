@@ -15,10 +15,14 @@ struct AddWeightView: View {
     var body: some View {
         NavigationStack {
             Form {
-                DatePicker("日期", selection: $date, displayedComponents: .date)
-                TextField("体重（kg）", text: $weightText)
-                    .keyboardType(.decimalPad)
+                Section {
+                    DatePicker("日期", selection: $date, displayedComponents: .date)
+                    TextField("体重（kg）", text: $weightText)
+                        .keyboardType(.decimalPad)
+                }
+                .fitCardRow()
             }
+            .fitListChrome()
             .navigationTitle("记录体重")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
