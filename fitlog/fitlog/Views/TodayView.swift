@@ -30,7 +30,11 @@ struct TodayView: View {
                 } else {
                     List {
                         ForEach(todayRecords) { record in
-                            TrainingRow(record: record)
+                            NavigationLink {
+                                WorkoutDetailView(record: record)
+                            } label: {
+                                TrainingRow(record: record)
+                            }
                         }
                         .onDelete(perform: delete)
                     }

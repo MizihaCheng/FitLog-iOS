@@ -66,6 +66,25 @@ class FitStore: ObservableObject {
 
     func deleteTrainingRecord(_ record: TrainingRecord) {
         trainingRecords.removeAll { $0.id == record.id }
+        // 连带删除该训练下的所有组
+        exerciseSets.removeAll { $0.workoutId == record.id }
+        save()
+    }
+
+    // MARK: - 训练组（ExerciseSet）
+
+    /// 取某次训练下的所有组
+    func sets(for workoutId: UUID) -> [ExerciseSet] {
+        exerciseSets.filter { $0.workoutId == workoutId }
+    }
+
+    func addExerciseSet(_ set: ExerciseSet) {
+        exerciseSets.append(set)
+        save()
+    }
+
+    func deleteExerciseSet(_ set: ExerciseSet) {
+        exerciseSets.removeAll { $0.id == set.id }
         save()
     }
 }

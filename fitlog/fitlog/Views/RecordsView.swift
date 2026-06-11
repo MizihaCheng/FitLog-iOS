@@ -26,7 +26,11 @@ struct RecordsView: View {
                         ForEach(groupedByDate, id: \.date) { group in
                             Section(header: Text(sectionTitle(group.date))) {
                                 ForEach(group.records) { record in
-                                    RecordRow(record: record)
+                                    NavigationLink {
+                                        WorkoutDetailView(record: record)
+                                    } label: {
+                                        RecordRow(record: record)
+                                    }
                                 }
                                 .onDelete { offsets in
                                     delete(offsets, in: group.records)
