@@ -1,9 +1,15 @@
+# macOS
 .DS_Store
+
+# Xcode - user-specific state (do NOT ignore .xcodeproj itself)
+xcuserdata/
+*.xcuserstate
+DerivedData/
+build/
+
+# Swift Package Manager
 /.build
 /Packages
-xcuserdata/
-DerivedData/
-.swiftpm/configuration/registries.json
-.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+.swiftpm/
+
 .netrc
-*.xcodeproj
