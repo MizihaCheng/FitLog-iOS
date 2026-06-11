@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ProfileView: View {
     @EnvironmentObject var store: FitStore
@@ -6,6 +7,11 @@ struct ProfileView: View {
     @State private var showingGoal = false
     @State private var showingAddWeight = false
     @State private var showingAddMeasurement = false
+
+    @State private var showingExporter = false
+    @State private var showingImporter = false
+    @State private var showingImportAlert = false
+    @State private var importMessage = ""
 
     private var sortedWeights: [DailyWeightRecord] {
         store.weightRecords.sorted { $0.date > $1.date }
@@ -73,13 +79,72 @@ struct ProfileView: View {
                     SectionHeaderWithAdd(title: "围度记录") { showingAddMeasurement = true }
                 }
                 .fitCardRow()
+
+                // 数据备份
+                Section {
+                    Button {
+                        showingExporter = true
+                    } label: {
+                        Label("导出备份", systemImage: "square.and.arrow.up")
+                    }
+                    Button {
+                        showingImporter = true
+                    } label: {
+                        Label("导入备份", systemImage: "square.and.arrow.down")
+                    }
+                } header: {
+                    Text("数据备份")
+                } footer: {
+                    Text("导入会覆盖当前全部数据，建议先导出备份")
+                }
+                .fitCardRow()
             }
             .fitListChrome()
             .navigationTitle("我的")
             .sheet(isPresented: $showingGoal) { EditGoalView() }
             .sheet(isPresented: $showingAddWeight) { AddWeightView() }
             .sheet(isPresented: $showingAddMeasurement) { AddMeasurementView() }
+            .fileExporter(
+                isPresented: $showingExporter,
+                document: JSONDocument(data: store.exportData() ?? Data()),
+                contentType: .json,
+                defaultFilename: exportFilename
+            ) { _ in }
+            .fileImporter(
+                isPresented: $showingImporter,
+                allowedContentTypes: [.json]
+            ) { result in
+                handleImport(result)
+            }
+            .alert("导入", isPresented: $showingImportAlert) {
+                Button("好", role: .cancel) {}
+            } message: {
+                Text(importMessage)
+            }
         }
+    }
+
+    private var exportFilename: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return "fitlog-backup-\(formatter.string(from: Date()))"
+    }
+
+    private func handleImport(_ result: Result<URL, Error>) {
+        switch result {
+        case .success(let url):
+            let didAccess = url.startAccessingSecurityScopedResource()
+            defer { if didAccess { url.stopAccessingSecurityScopedResource() } }
+            do {
+                let data = try Data(contentsOf: url)
+                importMessage = store.importData(data) ? "导入成功" : "文件格式不正确，导入失败"
+            } catch {
+                importMessage = "读取文件失败：\(error.localizedDescription)"
+            }
+        case .failure(let error):
+            importMessage = "选择文件失败：\(error.localizedDescription)"
+        }
+        showingImportAlert = true
     }
 
     private func deleteWeight(at offsets: IndexSet) {

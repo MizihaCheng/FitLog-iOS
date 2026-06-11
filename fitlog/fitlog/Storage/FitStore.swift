@@ -57,6 +57,37 @@ class FitStore: ObservableObject {
         goal = snapshot.goal
     }
 
+    // MARK: - 备份导出 / 导入
+
+    /// 导出当前全部数据为 JSON
+    func exportData() -> Data? {
+        let snapshot = Snapshot(
+            trainingRecords: trainingRecords,
+            exerciseSets: exerciseSets,
+            weightRecords: weightRecords,
+            measurements: measurements,
+            goal: goal
+        )
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        return try? encoder.encode(snapshot)
+    }
+
+    /// 从 JSON 导入（覆盖现有数据），成功返回 true
+    @discardableResult
+    func importData(_ data: Data) -> Bool {
+        guard let snapshot = try? JSONDecoder().decode(Snapshot.self, from: data) else {
+            return false
+        }
+        trainingRecords = snapshot.trainingRecords
+        exerciseSets = snapshot.exerciseSets
+        weightRecords = snapshot.weightRecords
+        measurements = snapshot.measurements
+        goal = snapshot.goal
+        save()
+        return true
+    }
+
     // MARK: - 训练记录
 
     func addTrainingRecord(_ record: TrainingRecord) {
