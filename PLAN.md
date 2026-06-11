@@ -65,8 +65,8 @@ git pull
 - [x] **第 5 步** 数据备份：ProfileView 导出/导入 JSON（fileExporter/fileImporter + JSONDocument）
 - [x] **第 6 步** 趋势页：Swift Charts 体重折线 + 目标虚线 + 统计（最新/变化/训练次数）。可后续加训练量图
 - [x] **第 7 步** 日历页：自定义月历（周一起始、翻月），训练日标圆点，点日期看当天训练
-- [ ] **第 8 步** 肌肉激活图（MuscleMap）—— 移植难点，独立排期
-- [ ] **第 9 步** PDF 导出 / 备份文件分享
+- [ ] **第 8 步** 肌肉激活图（MuscleMap）—— 移植难点。**前置**：训练表单需先采集 bodyParts（部位），当前只采集类型/时长/备注，否则肌肉图无数据
+- [x] **第 9 步** PDF 导出：PDFReport 生成训练报告（按日期分组+组+分页），ProfileView「导出 PDF 报告」
 - [x] **第 10 步** UI 还原：
   - [x] (一) 暖色主题 —— FitColors.swift 动态色、橙色 AccentColor、各页米色背景+白卡片
   - [x] (二) 弹窗表单（AddXxx/EditGoal）统一暖色背景+白卡片
@@ -78,6 +78,7 @@ git pull
 
 ## 进度备注
 
-- 最近完成：第 5 步 数据备份（commit `7b0f97d`）。
-- 下一步：剩 第 8 步肌肉图、第 9 步 PDF（均为可选增强）。核心+UI+备份已全部完成。
+- 最近完成：第 9 步 PDF 导出（commit `74f09ef`）。
+- 仅剩 第 8 步肌肉图。前置需先在训练表单采集 bodyParts（部位多选），再做人体高亮图。
+- 已全部完成：第1-7、9、10 步。
 - 同一份计划也记在 Claude 长期记忆 `fitlog-ios-port.md`，两边保持同步。
