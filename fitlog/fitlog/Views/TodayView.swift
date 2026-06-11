@@ -48,9 +48,9 @@ struct TodayView: View {
             .padding(.vertical, 18)
         }
         .background(Color.fitBackground.ignoresSafeArea())
-        .sheet(isPresented: $showingWeight) { AddWeightView() }
+        .sheet(isPresented: $showingWeight) { WeightEntryView() }
         .sheet(isPresented: $showingTraining) { StructuredTrainingEntryView() }
-        .sheet(isPresented: $showingMeasurement) { AddMeasurementView() }
+        .sheet(isPresented: $showingMeasurement) { MeasurementEntryView() }
     }
 
     // MARK: - 计算

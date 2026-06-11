@@ -1,5 +1,12 @@
 import Foundation
 
+/// 今天的日期字符串 yyyy-MM-dd
+func fitTodayString() -> String {
+    let f = DateFormatter()
+    f.dateFormat = "yyyy-MM-dd"
+    return f.string(from: Date())
+}
+
 /// 与 Android StatsUtils.formatWeight 一致：保留一位小数，整数则去掉小数
 func fitFormatWeight(_ value: Double) -> String {
     let rounded = (value * 10).rounded() / 10
