@@ -11,6 +11,8 @@ struct ContentView: View {
                 .tabItem { Label("趋势", systemImage: "chart.line.uptrend.xyaxis") }
             CalendarView()
                 .tabItem { Label("日历", systemImage: "calendar") }
+            ProfileView()
+                .tabItem { Label("我的", systemImage: "person.circle") }
         }
     }
 }

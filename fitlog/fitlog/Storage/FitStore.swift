@@ -87,4 +87,37 @@ class FitStore: ObservableObject {
         exerciseSets.removeAll { $0.id == set.id }
         save()
     }
+
+    // MARK: - 体重记录（按日期一天一条）
+
+    func upsertWeight(_ record: DailyWeightRecord) {
+        weightRecords.removeAll { $0.date == record.date }
+        weightRecords.append(record)
+        save()
+    }
+
+    func deleteWeight(_ record: DailyWeightRecord) {
+        weightRecords.removeAll { $0.date == record.date }
+        save()
+    }
+
+    // MARK: - 围度记录（按日期一天一条）
+
+    func upsertMeasurement(_ record: BodyMeasurementRecord) {
+        measurements.removeAll { $0.date == record.date }
+        measurements.append(record)
+        save()
+    }
+
+    func deleteMeasurement(_ record: BodyMeasurementRecord) {
+        measurements.removeAll { $0.date == record.date }
+        save()
+    }
+
+    // MARK: - 目标
+
+    func updateGoal(_ newGoal: GoalRecord) {
+        goal = newGoal
+        save()
+    }
 }
