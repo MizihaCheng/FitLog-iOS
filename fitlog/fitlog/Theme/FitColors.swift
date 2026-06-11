@@ -40,4 +40,12 @@ extension View {
     func fitCardRow() -> some View {
         self.listRowBackground(Color.fitCardSurface)
     }
+
+    /// 白色圆角卡片（对应 Android FitShapeTokens.CardRadius = 22）
+    func fitCard(padding: CGFloat = 18) -> some View {
+        self
+            .padding(padding)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.fitCardSurface, in: RoundedRectangle(cornerRadius: 22))
+    }
 }
