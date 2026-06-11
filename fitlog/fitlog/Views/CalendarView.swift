@@ -3,12 +3,12 @@ import SwiftUI
 struct CalendarView: View {
     @EnvironmentObject var store: FitStore
 
-    @State private var monthAnchor = Date()      // 当前显示月份内的任意一天
-    @State private var selectedDate: Date = Date()
+    @State private var monthAnchor = Date()
+    @State private var detailDay: DayKey?
 
     private var calendar: Calendar {
         var c = Calendar(identifier: .gregorian)
-        c.firstWeekday = 2 // 周一
+        c.firstWeekday = 2
         return c
     }
 
@@ -18,145 +18,123 @@ struct CalendarView: View {
         return f
     }()
 
-    /// 有训练记录的日期字符串集合
-    private var trainingDays: Set<String> {
-        Set(store.trainingRecords.map { $0.date })
-    }
+    private var weightDates: Set<String> { Set(store.weightRecords.map { $0.date }) }
+    private var trainingDates: Set<String> { Set(store.trainingRecords.map { $0.date }) }
+    private var measurementDates: Set<String> { Set(store.measurements.map { $0.date }) }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    header
-                    weekdayRow
-                    grid
-                    selectedDayList
-                }
-                .padding()
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                header
+                weekdayRow
+                grid
+                legend
             }
-            .background(Color.fitBackground.ignoresSafeArea())
-            .navigationTitle("日历")
+            .fitCard()
+            .padding(.horizontal, 20)
+            .padding(.vertical, 18)
+        }
+        .background(Color.fitBackground.ignoresSafeArea())
+        .sheet(item: $detailDay) { day in
+            DayDetailView(date: day.id)
         }
     }
 
-    // MARK: - 顶部月份切换
+    // MARK: - 月份头
 
     private var header: some View {
         HStack {
             Button { changeMonth(-1) } label: {
-                Image(systemName: "chevron.left")
+                Text("〈").font(.title2).foregroundStyle(Color.fitAccent)
             }
             Spacer()
-            Text(monthTitle)
-                .font(.headline)
+            Text(monthTitle).font(.headline).foregroundStyle(Color.fitPrimaryText)
             Spacer()
             Button { changeMonth(1) } label: {
-                Image(systemName: "chevron.right")
+                Text("〉").font(.title2).foregroundStyle(Color.fitAccent)
             }
         }
     }
 
     private var weekdayRow: some View {
-        HStack {
+        HStack(spacing: 2) {
             ForEach(["一", "二", "三", "四", "五", "六", "日"], id: \.self) { day in
                 Text(day)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.caption).fontWeight(.semibold)
+                    .foregroundStyle(Color.fitSecondaryText)
                     .frame(maxWidth: .infinity)
             }
         }
     }
 
-    // MARK: - 月历网格
+    // MARK: - 网格
 
     private var grid: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 7), spacing: 2) {
             ForEach(Array(monthDays.enumerated()), id: \.offset) { _, day in
                 if let day {
                     dayCell(day)
                 } else {
-                    Color.clear.frame(height: 44)
+                    Color.clear.frame(height: 62)
                 }
             }
         }
     }
 
     private func dayCell(_ date: Date) -> some View {
-        let dayString = dateFormatter.string(from: date)
-        let hasTraining = trainingDays.contains(dayString)
-        let isSelected = calendar.isDate(selectedDate, inSameDayAs: date)
+        let ds = dateFormatter.string(from: date)
+        let hasWeight = weightDates.contains(ds)
+        let hasTraining = trainingDates.contains(ds)
+        let hasMeasurement = measurementDates.contains(ds)
+        let hasRecord = hasWeight || hasTraining || hasMeasurement
         let isToday = calendar.isDateInToday(date)
+
+        let bg: Color = isToday ? .fitAccent : (hasRecord ? Color.fitAccent.opacity(0.12) : Color.fitCardSurface)
+        let dateColor: Color = isToday ? .white : .fitPrimaryText
+        let borderColor: Color = isToday ? .clear : (hasRecord ? Color.fitAccent.opacity(0.25) : Color.fitDivider)
 
         return VStack(spacing: 4) {
             Text("\(calendar.component(.day, from: date))")
-                .font(.callout)
-                .frame(width: 34, height: 34)
-                .background(
-                    isSelected ? Color.accentColor
-                        : (isToday ? Color.accentColor.opacity(0.15) : Color.clear)
-                )
-                .clipShape(Circle())
-                .foregroundStyle(isSelected ? Color.white : Color.primary)
-            Circle()
-                .fill(hasTraining ? Color.accentColor : Color.clear)
-                .frame(width: 6, height: 6)
+                .font(.subheadline).fontWeight(isToday ? .bold : .regular)
+                .foregroundStyle(dateColor)
+            HStack(spacing: 3) {
+                if hasWeight { dot(.fitAccent) }
+                if hasTraining { dot(.fitTrainingBlue) }
+                if hasMeasurement { dot(.fitPositiveGreen) }
+            }
+            .frame(height: 6)
         }
         .frame(maxWidth: .infinity)
+        .frame(height: 62)
+        .background(bg, in: RoundedRectangle(cornerRadius: 6))
+        .overlay(
+            RoundedRectangle(cornerRadius: 6).stroke(borderColor, lineWidth: 1)
+        )
         .contentShape(Rectangle())
-        .onTapGesture { selectedDate = date }
+        .onTapGesture { detailDay = DayKey(id: ds) }
     }
 
-    // MARK: - 选中日期的训练列表
+    private func dot(_ color: Color) -> some View {
+        Circle().fill(color).frame(width: 6, height: 6)
+    }
 
-    @ViewBuilder
-    private var selectedDayList: some View {
-        let dayString = dateFormatter.string(from: selectedDate)
-        let records = store.trainingRecords
-            .filter { $0.date == dayString }
-            .sorted { $0.time > $1.time }
+    // MARK: - 图例
 
-        VStack(alignment: .leading, spacing: 8) {
-            Text(selectedTitle)
-                .font(.headline)
-
-            if records.isEmpty {
-                Text("这天没有训练记录")
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            } else {
-                ForEach(records) { record in
-                    NavigationLink {
-                        WorkoutDetailView(record: record)
-                    } label: {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(record.trainingType)
-                                if !record.note.isEmpty {
-                                    Text(record.note)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                            Spacer()
-                            Text(record.time)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
-                        }
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    if record.id != records.last?.id {
-                        Divider()
-                    }
-                }
-            }
+    private var legend: some View {
+        HStack(spacing: 20) {
+            Spacer()
+            legendItem(.fitAccent, "体重")
+            legendItem(.fitTrainingBlue, "训练")
+            legendItem(.fitPositiveGreen, "围度")
+            Spacer()
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(Color.fitCardSurface, in: RoundedRectangle(cornerRadius: 18))
+    }
+
+    private func legendItem(_ color: Color, _ label: String) -> some View {
+        HStack(spacing: 6) {
+            dot(color)
+            Text(label).font(.caption).foregroundStyle(Color.fitSecondaryText)
+        }
     }
 
     // MARK: - 计算
@@ -167,7 +145,6 @@ struct CalendarView: View {
         let dayCount = calendar.range(of: .day, in: .month, for: monthAnchor)?.count ?? 30
         let weekday = calendar.component(.weekday, from: firstOfMonth)
         let leading = (weekday - calendar.firstWeekday + 7) % 7
-
         var result: [Date?] = Array(repeating: nil, count: leading)
         for offset in 0..<dayCount {
             if let date = calendar.date(byAdding: .day, value: offset, to: firstOfMonth) {
@@ -184,16 +161,14 @@ struct CalendarView: View {
         return f.string(from: monthAnchor)
     }
 
-    private var selectedTitle: String {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "zh_CN")
-        f.dateFormat = "M月d日 EEE"
-        return f.string(from: selectedDate)
-    }
-
     private func changeMonth(_ delta: Int) {
         if let newAnchor = calendar.date(byAdding: .month, value: delta, to: monthAnchor) {
             monthAnchor = newAnchor
         }
     }
+}
+
+/// 用于 sheet(item:) 的日期包装
+struct DayKey: Identifiable {
+    let id: String
 }

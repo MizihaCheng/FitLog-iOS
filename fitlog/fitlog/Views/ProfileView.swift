@@ -13,9 +13,6 @@ struct ProfileView: View {
     @State private var showingImportAlert = false
     @State private var importMessage = ""
 
-    @State private var showingPDFExporter = false
-    @State private var pdfData: Data?
-
     private var sortedWeights: [DailyWeightRecord] {
         store.weightRecords.sorted { $0.date > $1.date }
     }
@@ -95,12 +92,6 @@ struct ProfileView: View {
                     } label: {
                         Label("导入备份", systemImage: "square.and.arrow.down")
                     }
-                    Button {
-                        pdfData = PDFReport.trainingReport(store: store)
-                        showingPDFExporter = true
-                    } label: {
-                        Label("导出 PDF 报告", systemImage: "doc.richtext")
-                    }
                 } header: {
                     Text("数据备份")
                 } footer: {
@@ -125,12 +116,6 @@ struct ProfileView: View {
             ) { result in
                 handleImport(result)
             }
-            .fileExporter(
-                isPresented: $showingPDFExporter,
-                document: PDFFileDocument(data: pdfData ?? Data()),
-                contentType: .pdf,
-                defaultFilename: "fitlog-报告-\(exportDateString)"
-            ) { _ in }
             .alert("导入", isPresented: $showingImportAlert) {
                 Button("好", role: .cancel) {}
             } message: {
