@@ -60,7 +60,7 @@ git pull
 - [x] **第 0 步** 工程骨架跑通，4 个 Tab 显示
 - [x] **第 1 步** FitStore JSON 持久化 + 今日页训练记录（增 / 列表 / 滑动删除 / 空态）
 - [x] **第 2 步** 记录页：全部历史训练列表，按日期分组（倒序）、滑动删除、空态（编辑待后续）
-- [ ] **第 3 步** 训练组数（ExerciseSet）：在一次训练里记多组「动作 + 重量 + 次数」，对应 Android TodayScreen 的核心
+- [x] **第 3 步** 训练组（ExerciseSet）：训练详情页 WorkoutDetailView + 加组表单 AddSetView，今日/记录行可点进详情
 - [ ] **第 4 步** 体重 & 围度记录 + 目标（DailyWeightRecord / BodyMeasurementRecord / GoalRecord）
 - [ ] **第 5 步** 「我的 / Profile」页：目标设置、数据备份/导入
 - [ ] **第 6 步** 趋势页：Swift Charts 画体重曲线、训练量等（用户标记为最麻烦，靠后做）
@@ -75,6 +75,6 @@ git pull
 
 ## 进度备注
 
-- 最近完成：第 2 步 记录页（commit `ccaa1be`）。
-- 下一步：第 3 步 训练组数（动作 + 重量 + 次数）。
+- 最近完成：第 3 步 训练组（commit `a9d7ca8`）。
+- 下一步：第 4 步 体重 / 围度记录 + 目标。
 - 同一份计划也记在 Claude 长期记忆 `fitlog-ios-port.md`，两边保持同步。
