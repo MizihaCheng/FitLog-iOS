@@ -127,16 +127,20 @@ struct DayDetailView: View {
         [m.waistCm, m.hipCm, m.thighCm, m.chestCm, m.armCm, m.bodyFatPercent].contains { !$0.isEmpty }
     }
 
-    // MARK: - 肌肉激活（占位，第6步实现）
+    // MARK: - 肌肉激活
+
+    private var muscleHighlights: [String: Intensity] {
+        dayMuscleHighlights(records: dayTrainings) { store.sets(for: $0) }
+    }
 
     private var muscleCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("肌肉激活").font(.headline).foregroundStyle(Color.fitPrimaryText)
-            Text("肌肉激活图开发中")
-                .font(.subheadline)
-                .foregroundStyle(Color.fitSecondaryText)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.vertical, 24)
+            MuscleMapView(highlights: muscleHighlights)
+                .frame(height: 280)
+                .frame(maxWidth: .infinity)
+            MuscleLegend()
+            ActivatedMuscleChips(highlights: muscleHighlights)
         }
         .fitCard()
     }

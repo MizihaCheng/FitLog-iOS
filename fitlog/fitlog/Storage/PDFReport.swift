@@ -77,7 +77,7 @@ enum PDFReport {
         value == value.rounded() ? String(Int(value)) : String(format: "%.1f", value)
     }
 
-    // MARK: - 单日报告（对应 Android PdfExporter.exportDayDetail，暂不含肌肉图）
+    // MARK: - 单日报告（对应 Android PdfExporter.exportDayDetail，含肌肉图）
 
     static func dayReport(store: FitStore, date: String) -> Data {
         let pageRect = CGRect(x: 0, y: 0, width: 595, height: 842)
@@ -183,6 +183,23 @@ enum PDFReport {
             }
             y += 8
 
+            // 肌肉激活
+            if !trainings.isEmpty {
+                let highlights = dayMuscleHighlights(records: trainings) { store.sets(for: $0) }
+                sectionTitle("肌肉激活")
+                let mapH: CGFloat = 200
+                ensure(mapH + 8)
+                let mapRect = CGRect(x: margin, y: y, width: pageRect.width - margin * 2, height: mapH)
+                drawMuscleMap(context.cgContext, highlights: highlights, in: mapRect)
+                y += mapH + 6
+                let names = activatedMuscleNames(highlights).map { $0.name }
+                if !names.isEmpty {
+                    draw("激活：" + names.joined(separator: "、"), margin + 6, y, .systemFont(ofSize: 11), orangeDark)
+                    y += 18
+                }
+                y += 8
+            }
+
             // 训练
             sectionTitle("训练")
             if trainings.isEmpty {
@@ -214,6 +231,49 @@ enum PDFReport {
             let gen = DateFormatter(); gen.dateFormat = "yyyy-MM-dd HH:mm"
             draw("FitLog  导出时间 \(gen.string(from: Date()))", margin, footY, .systemFont(ofSize: 10), gray)
         }
+    }
+
+    // MARK: - 肌肉图（绘进 PDF 的 CGContext，正反两人像并排）
+
+    private static func drawMuscleMap(_ cg: CGContext, highlights: [String: Intensity], in rect: CGRect) {
+        let vw = MuscleMap.viewW, vh = MuscleMap.viewH
+        let gap: CGFloat = 36
+        let halfW = (rect.width - gap) / 2
+        let scale = min(halfW / vw, rect.height / vh)
+        let figW = vw * scale, figH = vh * scale
+        let dy = rect.minY + (rect.height - figH) / 2
+        let frontDx = rect.minX + (halfW - figW) / 2
+        let backDx = rect.minX + halfW + gap + (halfW - figW) / 2
+        drawMuscleFigure(cg, MuscleGeometry.frontPaths, highlights, scale: scale, dx: frontDx, dy: dy)
+        drawMuscleFigure(cg, MuscleGeometry.backPaths, highlights, scale: scale, dx: backDx, dy: dy)
+    }
+
+    private static func drawMuscleFigure(
+        _ cg: CGContext,
+        _ paths: [String: Path],
+        _ highlights: [String: Intensity],
+        scale: CGFloat, dx: CGFloat, dy: CGFloat
+    ) {
+        let primaryFill = UIColor(red: 0.949, green: 0.420, blue: 0.114, alpha: 1)
+        let primaryStroke = UIColor(red: 0.761, green: 0.267, blue: 0.020, alpha: 1)
+        let secondaryFill = UIColor(red: 0.984, green: 0.780, blue: 0.612, alpha: 1)
+        let secondaryStroke = UIColor(red: 0.933, green: 0.624, blue: 0.369, alpha: 1)
+        let baseFill = UIColor(red: 0.894, green: 0.855, blue: 0.796, alpha: 1)
+        let baseStroke = UIColor(red: 0.827, green: 0.780, blue: 0.706, alpha: 1)
+
+        var transform = CGAffineTransform(a: scale, b: 0, c: 0, d: scale, tx: dx, ty: dy)
+
+        func pass(_ filter: (Intensity?) -> Bool, _ fill: UIColor, _ stroke: UIColor) {
+            for (slug, path) in paths where filter(highlights[slug]) {
+                guard let cgp = path.cgPath.copy(using: &transform) else { continue }
+                cg.addPath(cgp); cg.setFillColor(fill.cgColor); cg.fillPath()
+                cg.addPath(cgp); cg.setStrokeColor(stroke.cgColor)
+                cg.setLineWidth(1.4 * scale); cg.strokePath()
+            }
+        }
+        pass({ $0 == nil }, baseFill, baseStroke)
+        pass({ $0 == .secondary }, secondaryFill, secondaryStroke)
+        pass({ $0 == .primary }, primaryFill, primaryStroke)
     }
 
     private static func yesterdayChange(store: FitStore, date: String, today: Double) -> Double? {
