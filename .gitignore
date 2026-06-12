@@ -13,3 +13,8 @@ build/
 .swiftpm/
 
 .netrc
+
+# 个人数据备份/导入文件（真实体重/训练数据，公开仓库别提交）
+FitLog_backup_*.json
+FitLog_import_*.json
+FitLog_records_*.csv
