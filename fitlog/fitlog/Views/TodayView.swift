@@ -6,6 +6,7 @@ struct TodayView: View {
     @State private var showingWeight = false
     @State private var showingTraining = false
     @State private var showingMeasurement = false
+    @State private var showingSummary = false
 
     var body: some View {
         ScrollView {
@@ -44,6 +45,19 @@ struct TodayView: View {
                     recoveryProvider: { store.recovery(forWorkout: $0) },
                     onDelete: { store.deleteTrainingRecord($0) }
                 )
+
+                if !todayTrainings.isEmpty {
+                    Button { showingSummary = true } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "sparkles")
+                            Text("今日 AI 总结")
+                        }
+                        .font(.subheadline).fontWeight(.semibold).foregroundStyle(.white)
+                        .frame(maxWidth: .infinity).frame(height: 48)
+                        .background(Color.fitAccent, in: RoundedRectangle(cornerRadius: 14))
+                    }
+                    .buttonStyle(.plain)
+                }
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 18)
@@ -52,6 +66,7 @@ struct TodayView: View {
         .sheet(isPresented: $showingWeight) { WeightEntryView() }
         .sheet(isPresented: $showingTraining) { StructuredTrainingEntryView() }
         .sheet(isPresented: $showingMeasurement) { MeasurementEntryView() }
+        .sheet(isPresented: $showingSummary) { TodaySummaryView(date: todayString).environmentObject(store) }
     }
 
     // MARK: - 计算

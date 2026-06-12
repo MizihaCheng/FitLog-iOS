@@ -6,6 +6,7 @@ struct ProfileView: View {
 
     @State private var targetInput = ""
     @State private var loadedTarget = false
+    @AppStorage("deepseek_api_key") private var apiKey = ""
 
     @State private var showingJSONExporter = false
     @State private var showingCSVExporter = false
@@ -19,6 +20,7 @@ struct ProfileView: View {
             VStack(spacing: 14) {
                 weightOverviewCard
                 targetCard
+                aiCard
                 dataManagementCard
             }
             .padding(.horizontal, 20).padding(.vertical, 18)
@@ -110,6 +112,32 @@ struct ProfileView: View {
             }
             FitLabeledField(label: "设置目标体重", text: $targetInput, placeholder: "目标体重", suffix: "kg")
             FitPrimaryButton(title: "保存目标") { store.setTargetWeight(targetInput) }
+        }
+        .fitCard()
+    }
+
+    // MARK: - AI 助手
+
+    private var aiCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("AI 助手（DeepSeek）").font(.headline).foregroundStyle(Color.fitPrimaryText)
+            Text("填入你的 DeepSeek API Key，就能在今日页生成「今日 AI 总结」。Key 只存在本机、不上传、不进云端备份、也不进代码仓库。")
+                .font(.caption).foregroundStyle(Color.fitSecondaryText)
+            SecureField("sk-...", text: $apiKey)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .padding(12)
+                .background(Color.fitDivider.opacity(0.5), in: RoundedRectangle(cornerRadius: 12))
+            HStack {
+                if apiKey.trimmingCharacters(in: .whitespaces).isEmpty {
+                    Text("未设置").font(.caption).foregroundStyle(Color.fitSecondaryText)
+                } else {
+                    Text("已保存 ✓").font(.caption).foregroundStyle(Color.fitPositiveGreen)
+                    Spacer()
+                    Button("清除") { apiKey = "" }
+                        .font(.caption).foregroundStyle(Color.fitWarningRed)
+                }
+            }
         }
         .fitCard()
     }
