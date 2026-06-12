@@ -48,6 +48,7 @@ struct TrendsView: View {
             VStack(spacing: 14) {
                 weightCard
                 reviewCard
+                recoveryCard
                 bodyCard
             }
             .padding(.horizontal, 20).padding(.vertical, 18)
@@ -216,6 +217,37 @@ struct TrendsView: View {
         }
         s.hasAnyData = !weightsInRange.isEmpty || !trainingsInRange.isEmpty
         return s
+    }
+
+    // MARK: - 恢复能力趋势
+
+    private var recoveryPoints: [ChartPoint] {
+        store.heartRateRecoveries.compactMap { r in
+            guard let d = dateParser.date(from: r.date) else { return nil }
+            return ChartPoint(date: d, value: Double(r.recoveryDrop))
+        }.sorted { $0.date < $1.date }
+    }
+
+    private var recoveryCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("恢复能力趋势").font(.headline).foregroundStyle(Color.fitPrimaryText)
+            Text("运动后 1 分钟心率回落，越大说明心肺恢复越好")
+                .font(.caption).foregroundStyle(Color.fitSecondaryText)
+            if recoveryPoints.count < 2 {
+                Text("还没有足够的数据，练完测两次以上就能看趋势了")
+                    .font(.subheadline).foregroundStyle(Color.fitSecondaryText)
+            } else {
+                Chart(recoveryPoints) { p in
+                    LineMark(x: .value("日期", p.date), y: .value("回落", p.value))
+                        .foregroundStyle(Color.fitHeartCoral)
+                        .interpolationMethod(.catmullRom)
+                    PointMark(x: .value("日期", p.date), y: .value("回落", p.value))
+                        .foregroundStyle(Color.fitHeartCoral)
+                }
+                .frame(height: 200)
+            }
+        }
+        .fitCard()
     }
 
     // MARK: - 围度趋势

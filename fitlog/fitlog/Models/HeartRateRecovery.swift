@@ -43,3 +43,14 @@ struct HeartRateRecovery: Identifiable, Codable {
     /// 1 分钟心率回落（峰值 − 结束），越大恢复越好。
     var recoveryDrop: Int { max(peakBpm - endBpm, 0) }
 }
+
+/// 测量页测完回传给录入页的中间结果。
+/// workoutId/date/time 要等训练保存那一刻才确定，所以测量阶段先不带。
+struct HeartRateResult {
+    var peakBpm: Int
+    var endBpm: Int
+    var windowSec: Int
+    var samples: [HeartRateSample]
+
+    var recoveryDrop: Int { max(peakBpm - endBpm, 0) }
+}

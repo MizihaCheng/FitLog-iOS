@@ -165,6 +165,7 @@ struct DayDetailView: View {
                     TrainingRecordItem(
                         record: record,
                         sets: store.sets(for: record.id),
+                        recovery: store.recovery(forWorkout: record.id),
                         onDelete: { store.deleteTrainingRecord(record) }
                     )
                 }

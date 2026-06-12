@@ -41,6 +41,7 @@ struct TodayView: View {
                 TodayTrainingListCard(
                     records: todayTrainings,
                     setsProvider: { store.sets(for: $0) },
+                    recoveryProvider: { store.recovery(forWorkout: $0) },
                     onDelete: { store.deleteTrainingRecord($0) }
                 )
             }
@@ -363,6 +364,7 @@ private struct QuickActionButton: View {
 private struct TodayTrainingListCard: View {
     let records: [TrainingRecord]
     let setsProvider: (UUID) -> [ExerciseSet]
+    let recoveryProvider: (UUID) -> HeartRateRecovery?
     let onDelete: (TrainingRecord) -> Void
 
     var body: some View {
@@ -377,6 +379,7 @@ private struct TodayTrainingListCard: View {
                     TrainingRecordItem(
                         record: record,
                         sets: setsProvider(record.id),
+                        recovery: recoveryProvider(record.id),
                         onDelete: { onDelete(record) }
                     )
                 }
@@ -390,6 +393,7 @@ private struct TodayTrainingListCard: View {
 struct TrainingRecordItem: View {
     let record: TrainingRecord
     let sets: [ExerciseSet]
+    var recovery: HeartRateRecovery? = nil
     let onDelete: () -> Void
 
     private var grouped: [(name: String, sets: [ExerciseSet])] {
@@ -413,6 +417,18 @@ struct TrainingRecordItem: View {
                     Text(record.metricText)
                         .font(.caption).fontWeight(.medium)
                         .foregroundStyle(Color.fitSecondaryText)
+                }
+            }
+            if let rec = recovery {
+                HStack(spacing: 8) {
+                    Image(systemName: "heart.fill").font(.caption2).foregroundStyle(Color.fitHeartCoral)
+                    Text("\(rec.peakBpm)→\(rec.endBpm)")
+                        .font(.caption).fontWeight(.semibold).foregroundStyle(Color.fitHeartCoral)
+                    Text("↓\(rec.recoveryDrop)").font(.caption2).foregroundStyle(Color.fitSecondaryText)
+                    RecoverySparkline(samples: rec.samples)
+                        .stroke(Color.fitHeartCoral, style: StrokeStyle(lineWidth: 1.5, lineJoin: .round))
+                        .frame(width: 56, height: 18)
+                    Spacer()
                 }
             }
             if !record.note.isEmpty {
@@ -452,6 +468,28 @@ struct TrainingRecordItem: View {
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.fitBackground, in: RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+/// 心率恢复迷你曲线（训练记录里的小 sparkline）
+struct RecoverySparkline: Shape {
+    let samples: [HeartRateSample]
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        guard samples.count >= 2 else { return path }
+        let ts = samples.map { Double($0.t) }
+        let bpms = samples.map { Double($0.bpm) }
+        let minT = ts.min() ?? 0, maxT = ts.max() ?? 1
+        let minB = bpms.min() ?? 0, maxB = bpms.max() ?? 1
+        let spanT = max(maxT - minT, 1), spanB = max(maxB - minB, 1)
+        for (i, s) in samples.enumerated() {
+            let x = rect.minX + CGFloat((Double(s.t) - minT) / spanT) * rect.width
+            let y = rect.maxY - CGFloat((Double(s.bpm) - minB) / spanB) * rect.height
+            if i == 0 { path.move(to: CGPoint(x: x, y: y)) }
+            else { path.addLine(to: CGPoint(x: x, y: y)) }
+        }
+        return path
     }
 }
 

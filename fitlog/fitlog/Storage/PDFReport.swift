@@ -216,6 +216,10 @@ enum PDFReport {
                     if !record.note.isEmpty {
                         draw("备注：\(record.note)", margin + 12, y, .systemFont(ofSize: 11), gray); y += 18
                     }
+                    if let rec = store.recovery(forWorkout: record.id) {
+                        draw("运动后心率 \(rec.peakBpm)→\(rec.endBpm)  回落 \(rec.recoveryDrop) bpm",
+                             margin + 12, y, .systemFont(ofSize: 11), orangeDark); y += 16
+                    }
                     for set in store.sets(for: record.id) {
                         ensure(16)
                         draw("· \(set.exerciseName)  \(set.detailSetText)", margin + 16, y, .systemFont(ofSize: 11), textDark)

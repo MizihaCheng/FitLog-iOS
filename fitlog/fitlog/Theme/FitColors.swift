@@ -26,6 +26,7 @@ extension Color {
     static let fitPositiveGreen = fitDynamic(light: 0x5E9E6E, dark: 0x6FB87E)
     static let fitWarningRed    = fitDynamic(light: 0xD9534F, dark: 0xE8716D)
     static let fitTrainingBlue  = fitDynamic(light: 0x5B8FB0, dark: 0x6FA5C6)
+    static let fitHeartCoral    = fitDynamic(light: 0xEC4D54, dark: 0xF26A70)
 }
 
 extension View {

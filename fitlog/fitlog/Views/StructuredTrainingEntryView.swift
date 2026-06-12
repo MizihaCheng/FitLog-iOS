@@ -13,6 +13,8 @@ struct StructuredTrainingEntryView: View {
     @State private var note = ""
     @State private var exercises: [ExerciseInput] = [ExerciseInput()]
     @State private var validation: String?
+    @State private var hrResult: HeartRateResult?
+    @State private var showingHR = false
 
     var body: some View {
         NavigationStack {
@@ -30,6 +32,8 @@ struct StructuredTrainingEntryView: View {
                         }
                     }
 
+                    recoveryRow
+
                     if let validation {
                         Text(validation)
                             .font(.subheadline).fontWeight(.medium)
@@ -37,6 +41,9 @@ struct StructuredTrainingEntryView: View {
                     }
                 }
                 .padding(20)
+            }
+            .fullScreenCover(isPresented: $showingHR) {
+                HeartRateRecoveryView { result in hrResult = result }
             }
             .background(Color.fitBackground.ignoresSafeArea())
             .navigationTitle("添加训练")
@@ -187,6 +194,39 @@ struct StructuredTrainingEntryView: View {
         }
     }
 
+    // MARK: - 运动后心率恢复（收尾，可选）
+
+    private var recoveryRow: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Divider().background(Color.fitDivider)
+            Text("运动后心率恢复").font(.headline).foregroundStyle(Color.fitPrimaryText)
+            if let r = hrResult {
+                HStack(spacing: 8) {
+                    Image(systemName: "heart.fill").foregroundStyle(Color.fitHeartCoral)
+                    Text("\(r.peakBpm) → \(r.endBpm) bpm")
+                        .fontWeight(.semibold).foregroundStyle(Color.fitPrimaryText)
+                    Text("↓\(r.recoveryDrop)").fontWeight(.semibold).foregroundStyle(Color.fitHeartCoral)
+                    Spacer()
+                    Button("重测") { showingHR = true }.foregroundStyle(Color.fitAccent)
+                }
+                .font(.subheadline)
+            } else {
+                Button { showingHR = true } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "heart.fill")
+                        Text("测量运动后心率恢复（可选）")
+                    }
+                    .font(.subheadline).fontWeight(.semibold).foregroundStyle(.white)
+                    .frame(maxWidth: .infinity).frame(height: 46)
+                    .background(Color.fitHeartCoral, in: RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+                Text("练完那一刻测，看心率 1 分钟回落多少。")
+                    .font(.caption).foregroundStyle(Color.fitSecondaryText)
+            }
+        }
+    }
+
     // MARK: - 保存
 
     private func save() {
@@ -244,6 +284,17 @@ struct StructuredTrainingEntryView: View {
         }
 
         store.addTraining(record, sets: sets)
+        if let r = hrResult {
+            store.addRecovery(HeartRateRecovery(
+                workoutId: record.id,
+                date: today,
+                time: timeFormatter.string(from: Date()),
+                peakBpm: r.peakBpm,
+                endBpm: r.endBpm,
+                windowSec: r.windowSec,
+                samples: r.samples
+            ))
+        }
         dismiss()
     }
 }
