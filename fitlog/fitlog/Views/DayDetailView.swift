@@ -10,8 +10,7 @@ struct DayDetailView: View {
 
     @State private var showingWeight = false
     @State private var showingMeasurement = false
-    @State private var showingPDFExporter = false
-    @State private var pdfData: Data?
+    @State private var shareItem: ShareItem?
 
     private var dayTrainings: [TrainingRecord] {
         store.trainingRecords.filter { $0.date == date }.sorted { $0.time > $1.time }
@@ -27,9 +26,9 @@ struct DayDetailView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 14) {
-                    FitPrimaryButton(title: "导出本日 PDF") {
-                        pdfData = PDFReport.dayReport(store: store, date: date)
-                        showingPDFExporter = true
+                    FitPrimaryButton(title: "分享本日 PDF") {
+                        let data = PDFReport.dayReport(store: store, date: date)
+                        if let url = writeTempPDF(data) { shareItem = ShareItem(url: url) }
                     }
 
                     weightCard
@@ -51,12 +50,21 @@ struct DayDetailView: View {
             }
             .sheet(isPresented: $showingWeight) { WeightEntryView(date: date) }
             .sheet(isPresented: $showingMeasurement) { MeasurementEntryView(date: date) }
-            .fileExporter(
-                isPresented: $showingPDFExporter,
-                document: PDFFileDocument(data: pdfData ?? Data()),
-                contentType: .pdf,
-                defaultFilename: "FitLog_\(date)"
-            ) { _ in }
+            .sheet(item: $shareItem) { item in
+                ShareSheet(items: [item.url])
+            }
+        }
+    }
+
+    /// 把 PDF 写到临时目录，返回可分享的文件 URL。
+    private func writeTempPDF(_ data: Data) -> URL? {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("FitLog_\(date).pdf")
+        do {
+            try data.write(to: url)
+            return url
+        } catch {
+            return nil
         }
     }
 

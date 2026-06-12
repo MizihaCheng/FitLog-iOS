@@ -49,7 +49,10 @@ struct RecordsView: View {
     var body: some View {
         VStack(spacing: 0) {
             searchBar
-            if showFilters { filterPanel }
+            if showFilters {
+                filterPanel
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
 
             HStack {
                 Text("每日记录").font(.headline).foregroundStyle(Color.fitPrimaryText)
@@ -95,7 +98,7 @@ struct RecordsView: View {
             .background(Color.fitCardSurface, in: RoundedRectangle(cornerRadius: 14))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.fitDivider, lineWidth: 1))
 
-            Button { showFilters.toggle() } label: {
+            Button { withAnimation(.easeInOut(duration: 0.22)) { showFilters.toggle() } } label: {
                 ZStack(alignment: .topTrailing) {
                     Text(showFilters ? "收起" : "筛选")
                         .font(.subheadline).fontWeight(.semibold)
