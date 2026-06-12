@@ -19,7 +19,7 @@ struct DayDetailView: View {
         store.weightRecords.first { $0.date == date }
     }
     private var measurement: BodyMeasurementRecord? {
-        store.measurements.first { $0.date == date }
+        store.measurement(forWeekOf: date)
     }
 
     var body: some View {

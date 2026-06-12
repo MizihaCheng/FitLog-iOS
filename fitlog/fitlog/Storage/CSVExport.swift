@@ -31,7 +31,7 @@ func fitDetailedCSV(store: FitStore) -> String {
 
     for date in allDates {
         let weight = store.weightRecords.first { $0.date == date }
-        let measurement = store.measurements.first { $0.date == date }
+        let measurement = store.measurement(forWeekOf: date)
         let trainings = store.trainingRecords.filter { $0.date == date }.sorted { $0.time < $1.time }
 
         // 当日的体重/围度上下文（每行重复，便于表格分析）

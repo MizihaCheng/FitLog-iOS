@@ -20,7 +20,7 @@ struct CalendarView: View {
 
     private var weightDates: Set<String> { Set(store.weightRecords.map { $0.date }) }
     private var trainingDates: Set<String> { Set(store.trainingRecords.map { $0.date }) }
-    private var measurementDates: Set<String> { Set(store.measurements.map { $0.date }) }
+    private var measurementWeeks: Set<String> { Set(store.measurements.map { $0.normalizedWeekStart }) }
 
     var body: some View {
         ScrollView {
@@ -85,7 +85,7 @@ struct CalendarView: View {
         let ds = dateFormatter.string(from: date)
         let hasWeight = weightDates.contains(ds)
         let hasTraining = trainingDates.contains(ds)
-        let hasMeasurement = measurementDates.contains(ds)
+        let hasMeasurement = measurementWeeks.contains(fitWeekStart(of: ds))
         let hasRecord = hasWeight || hasTraining || hasMeasurement
         let isToday = calendar.isDateInToday(date)
 

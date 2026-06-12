@@ -189,7 +189,7 @@ struct RecordsView: View {
             DayGroup(
                 date: date,
                 weight: store.weightRecords.first { $0.date == date },
-                measurement: store.measurements.first { $0.date == date },
+                measurement: store.measurement(forWeekOf: date),
                 trainings: store.trainingRecords.filter { $0.date == date }.sorted { $0.time > $1.time }
             )
         }

@@ -52,7 +52,7 @@ struct MeasurementEntryView: View {
     private func preload() {
         guard !loaded else { return }
         loaded = true
-        guard let existing = store.measurements.first(where: { $0.date == date }) else { return }
+        guard let existing = store.measurement(forWeekOf: date) else { return }
         waist = existing.waistCm
         hip = existing.hipCm
         thigh = existing.thighCm

@@ -147,16 +147,24 @@ class FitStore: ObservableObject {
         save()
     }
 
-    // MARK: - 围度记录（按日期一天一条）
+    // MARK: - 围度记录（一周一条，管整周）
+
+    /// 查某天所属那一周的围度（按周起始匹配）。
+    func measurement(forWeekOf date: String) -> BodyMeasurementRecord? {
+        let week = fitWeekStart(of: date)
+        return measurements.first { $0.normalizedWeekStart == week }
+    }
 
     func upsertMeasurement(_ record: BodyMeasurementRecord) {
-        measurements.removeAll { $0.date == record.date }
+        let week = record.normalizedWeekStart
+        measurements.removeAll { $0.normalizedWeekStart == week }
         measurements.append(record)
         save()
     }
 
     func deleteMeasurement(_ record: BodyMeasurementRecord) {
-        measurements.removeAll { $0.date == record.date }
+        let week = record.normalizedWeekStart
+        measurements.removeAll { $0.normalizedWeekStart == week }
         save()
     }
 

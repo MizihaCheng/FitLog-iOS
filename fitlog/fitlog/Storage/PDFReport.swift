@@ -94,7 +94,7 @@ enum PDFReport {
         let divider = UIColor(red: 0.929, green: 0.906, blue: 0.859, alpha: 1)
 
         let weight = store.weightRecords.first { $0.date == date }
-        let measurement = store.measurements.first { $0.date == date }
+        let measurement = store.measurement(forWeekOf: date)
         let trainings = store.trainingRecords.filter { $0.date == date }.sorted { $0.time > $1.time }
         let goal = store.goal
 
