@@ -7,6 +7,7 @@ class FitStore: ObservableObject {
     @Published var exerciseSets: [ExerciseSet] = []
     @Published var weightRecords: [DailyWeightRecord] = []
     @Published var measurements: [BodyMeasurementRecord] = []
+    @Published var heartRateRecoveries: [HeartRateRecovery] = []
     @Published var goal = GoalRecord(targetWeightKg: "", startWeight: "", startDate: "")
 
     private let storageURL: URL = {
@@ -24,6 +25,8 @@ class FitStore: ObservableObject {
         var exerciseSets: [ExerciseSet]
         var weightRecords: [DailyWeightRecord]
         var measurements: [BodyMeasurementRecord]
+        // 可选 + 兜底：旧版 JSON 没有这个键，optional 才不会解码失败导致全量数据丢失。
+        var heartRateRecoveries: [HeartRateRecovery]?
         var goal: GoalRecord
     }
 
@@ -33,6 +36,7 @@ class FitStore: ObservableObject {
             exerciseSets: exerciseSets,
             weightRecords: weightRecords,
             measurements: measurements,
+            heartRateRecoveries: heartRateRecoveries,
             goal: goal
         )
         do {
@@ -54,6 +58,7 @@ class FitStore: ObservableObject {
         exerciseSets = snapshot.exerciseSets
         weightRecords = snapshot.weightRecords
         measurements = snapshot.measurements
+        heartRateRecoveries = snapshot.heartRateRecoveries ?? []
         goal = snapshot.goal
     }
 
@@ -66,6 +71,7 @@ class FitStore: ObservableObject {
             exerciseSets: exerciseSets,
             weightRecords: weightRecords,
             measurements: measurements,
+            heartRateRecoveries: heartRateRecoveries,
             goal: goal
         )
         let encoder = JSONEncoder()
@@ -83,6 +89,7 @@ class FitStore: ObservableObject {
         exerciseSets = snapshot.exerciseSets
         weightRecords = snapshot.weightRecords
         measurements = snapshot.measurements
+        heartRateRecoveries = snapshot.heartRateRecoveries ?? []
         goal = snapshot.goal
         save()
         return true
@@ -104,8 +111,28 @@ class FitStore: ObservableObject {
 
     func deleteTrainingRecord(_ record: TrainingRecord) {
         trainingRecords.removeAll { $0.id == record.id }
-        // 连带删除该训练下的所有组
+        // 连带删除该训练下的所有组 + 心率恢复记录
         exerciseSets.removeAll { $0.workoutId == record.id }
+        heartRateRecoveries.removeAll { $0.workoutId == record.id }
+        save()
+    }
+
+    // MARK: - 心率恢复（每次训练最多一条，挂在 workoutId 上）
+
+    /// 取某次训练的恢复记录。
+    func recovery(forWorkout workoutId: UUID) -> HeartRateRecovery? {
+        heartRateRecoveries.first { $0.workoutId == workoutId }
+    }
+
+    /// 保存一条恢复记录（同一训练已有则覆盖）。
+    func addRecovery(_ recovery: HeartRateRecovery) {
+        heartRateRecoveries.removeAll { $0.workoutId == recovery.workoutId }
+        heartRateRecoveries.append(recovery)
+        save()
+    }
+
+    func deleteRecovery(forWorkout workoutId: UUID) {
+        heartRateRecoveries.removeAll { $0.workoutId == workoutId }
         save()
     }
 
@@ -192,6 +219,7 @@ class FitStore: ObservableObject {
     func clearTrainingRecords() {
         trainingRecords = []
         exerciseSets = []
+        heartRateRecoveries = []
         save()
     }
 
@@ -215,6 +243,7 @@ class FitStore: ObservableObject {
         exerciseSets = []
         weightRecords = []
         measurements = []
+        heartRateRecoveries = []
         goal = GoalRecord(targetWeightKg: "", startWeight: "", startDate: "")
         save()
     }
