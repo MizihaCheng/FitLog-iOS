@@ -155,11 +155,13 @@ struct ProfileView: View {
 
     private func statCell(_ value: String, _ label: String, valueColor: Color = .fitPrimaryText) -> some View {
         VStack(spacing: 4) {
-            Text(value).font(.headline).foregroundStyle(valueColor).multilineTextAlignment(.center)
+            Text(value).font(.headline).foregroundStyle(valueColor)
+                .lineLimit(1).minimumScaleFactor(0.6).multilineTextAlignment(.center)
             Text(label).font(.caption2).foregroundStyle(Color.fitSecondaryText)
         }
         .frame(maxWidth: .infinity)
-        .padding(14)
+        .frame(minHeight: 64)
+        .padding(.vertical, 14).padding(.horizontal, 8)
         .background(Color.fitBackground, in: RoundedRectangle(cornerRadius: 14))
     }
 
