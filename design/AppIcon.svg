@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="1024" height="1024">
+  <!-- 米色底（与安卓图标一致 #FAF5EE） -->
+  <rect x="0" y="0" width="400" height="400" fill="#FAF5EE"/>
+  <!-- 前景：安卓 ic_launcher_foreground 的内容，整体围绕中心缩放 0.78 -->
+  <g transform="translate(200,200) scale(0.78) translate(-200,-200)">
+    <!-- 淡橙描边圆环（#2EE07A3C = #E07A3C，透明度 0.18） -->
+    <path d="M200,22C101.69,22 22,101.69 22,200C22,298.31 101.69,378 200,378C298.31,378 378,298.31 378,200C378,101.69 298.31,22 200,22"
+          fill="none" stroke="#E07A3C" stroke-opacity="0.18" stroke-width="2"/>
+    <!-- 哑铃，围绕中心旋转 -15° -->
+    <g transform="rotate(-15 200 200)">
+      <path d="M82,128h18a14,14 0,0 1,14 14v116a14,14 0,0 1,-14 14h-18a14,14 0,0 1,-14 -14v-116a14,14 0,0 1,14 -14z" fill="#E07A3C"/>
+      <path d="M124,152h4a10,10 0,0 1,10 10v76a10,10 0,0 1,-10 10h-4a10,10 0,0 1,-10 -10v-76a10,10 0,0 1,10 -10z" fill="#E07A3C"/>
+      <path d="M152,186h96a14,14 0,0 1,14 14a14,14 0,0 1,-14 14h-96a14,14 0,0 1,-14 -14a14,14 0,0 1,14 -14z" fill="#E07A3C"/>
+      <path d="M272,152h4a10,10 0,0 1,10 10v76a10,10 0,0 1,-10 10h-4a10,10 0,0 1,-10 -10v-76a10,10 0,0 1,10 -10z" fill="#E07A3C"/>
+      <path d="M300,128h18a14,14 0,0 1,14 14v116a14,14 0,0 1,-14 14h-18a14,14 0,0 1,-14 -14v-116a14,14 0,0 1,14 -14z" fill="#E07A3C"/>
+      <path d="M190,192L190,208" fill="none" stroke="#A14E16" stroke-linecap="round" stroke-width="4"/>
+      <path d="M210,192L210,208" fill="none" stroke="#A14E16" stroke-linecap="round" stroke-width="4"/>
+    </g>
+  </g>
+</svg>
