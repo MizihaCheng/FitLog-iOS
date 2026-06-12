@@ -24,7 +24,7 @@ struct TodaySummaryView: View {
                     case .loading:
                         HStack(spacing: 10) {
                             ProgressView()
-                            Text("正在让 DeepSeek 总结今天的训练…")
+                            Text("正在让 DeepSeek 总结这次训练…")
                                 .font(.subheadline).foregroundStyle(Color.fitSecondaryText)
                         }
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -33,7 +33,7 @@ struct TodaySummaryView: View {
                     case .done(let text):
                         HStack(spacing: 8) {
                             Image(systemName: "sparkles").foregroundStyle(Color.fitAccent)
-                            Text("今日小结").font(.headline).foregroundStyle(Color.fitPrimaryText)
+                            Text("\(date) 训练小结").font(.headline).foregroundStyle(Color.fitPrimaryText)
                         }
                         Text(text)
                             .font(.body)
@@ -58,7 +58,7 @@ struct TodaySummaryView: View {
                 .padding(20)
             }
             .background(Color.fitBackground.ignoresSafeArea())
-            .navigationTitle("今日 AI 总结")
+            .navigationTitle("AI 训练总结")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -81,9 +81,9 @@ struct TodaySummaryView: View {
     }
 
     private func load() async {
-        let hasTrainingToday = store.trainingRecords.contains { $0.date == date }
-        guard hasTrainingToday else {
-            phase = .failed("今天还没有训练记录，先记一条再来总结吧。")
+        let hasTraining = store.trainingRecords.contains { $0.date == date }
+        guard hasTraining else {
+            phase = .failed("还没有训练记录，先记一条再来总结吧。")
             return
         }
         guard !apiKey.trimmingCharacters(in: .whitespaces).isEmpty else {

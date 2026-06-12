@@ -46,11 +46,11 @@ struct TodayView: View {
                     onDelete: { store.deleteTrainingRecord($0) }
                 )
 
-                if !todayTrainings.isEmpty {
+                if summaryDate != nil {
                     Button { showingSummary = true } label: {
                         HStack(spacing: 8) {
                             Image(systemName: "sparkles")
-                            Text("今日 AI 总结")
+                            Text("AI 训练总结")
                         }
                         .font(.subheadline).fontWeight(.semibold).foregroundStyle(.white)
                         .frame(maxWidth: .infinity).frame(height: 48)
@@ -66,7 +66,15 @@ struct TodayView: View {
         .sheet(isPresented: $showingWeight) { WeightEntryView() }
         .sheet(isPresented: $showingTraining) { StructuredTrainingEntryView() }
         .sheet(isPresented: $showingMeasurement) { MeasurementEntryView() }
-        .sheet(isPresented: $showingSummary) { TodaySummaryView(date: todayString).environmentObject(store) }
+        .sheet(isPresented: $showingSummary) {
+            TodaySummaryView(date: summaryDate ?? todayString).environmentObject(store)
+        }
+    }
+
+    /// 要总结的训练日：今天有训练就今天，否则取最近一次有训练的日期；都没有则 nil（不显示按钮）。
+    private var summaryDate: String? {
+        if !todayTrainings.isEmpty { return todayString }
+        return store.trainingRecords.map(\.date).max()
     }
 
     // MARK: - 计算
